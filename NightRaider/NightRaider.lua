@@ -46,17 +46,6 @@ function addon:CommandTheNightRaider()
     end
 end
 
-local function ScrollFrame_OnMouseWheel(self, delta)
-    local newValue = self:GetVerticalScroll() - (delta * 20);
-
-    if (newValue < 0) then
-        newValue = 0;
-    elseif (newValue > self:GetVerticalScrollRange()) then
-        newValue = self:GetVerticalScrollRange();
-    end
-
-    self:SetVerticalScroll(newValue);
-end
 
 UIConfig.title = UIConfig:CreateFontString(nil, "OVERLAY")
 UIConfig.title:SetFontObject("GameFontHighlight");
@@ -75,38 +64,39 @@ UIConfig:SetBackdrop({
     insets = { left = 8, right = 6, top = 8, bottom = 8 },
 })
 UIConfig:SetBackdropBorderColor(0, .44, .87, 0.5) --
+--[[
+UIConfig.rankListFrame = CreateFrame("ScrollFrame", "MyMultiLineEditBox",
+    UIConfig, "InputBoxScriptTemplate")
+UIConfig.rankListFrame:SetWidth(570)
+UIConfig.rankListFrame:SetHeight(400)
+UIConfig.rankListFrame:SetPoint("CENTER");]]--
+--UIConfig.rankListFrame.EditBox:SetFontObject("ChatFontNormal")
+--UIConfig.rankListFrame.EditBox:SetAllPoints(true)
+--UIConfig.rankListFrame.EditBox:SetMultiLine(true)
 
-UIConfig.ScrollFrame = CreateFrame("ScrollFrame", nil, UIConfig, "UIPanelScrollFrameTemplate");
-UIConfig.ScrollFrame:SetPoint("TOPLEFT", 16, 32 , "TOPLEFT", 8, -8);
-UIConfig.ScrollFrame:SetPoint("BOTTOMRIGHT", 0,0, "BOTTOMRIGHT", -3, 60);
-UIConfig.ScrollFrame:SetClipsChildren(true);
-UIConfig.ScrollFrame:SetScript("OnMouseWheel", ScrollFrame_OnMouseWheel);
+--UIConfig.rankListFrame.EditBox:SetMaxLetters(101024)
+--UIConfig.rankListFrame:SetScript("OnEscapePressed", UIConfig.rankListFrame.ClearFocus)
+--UIConfig.rankListFrame.EditBox:SetScript("OnVerticalScroll", function(_) print("lol") end);
 
-UIConfig.child = CreateFrame("Frame", nil, UIConfig.ScrollFrame);
-UIConfig.child:SetSize(475, 450);
-UIConfig.ScrollFrame:SetScrollChild(UIConfig.child);
+local a = CreateFrame("ScrollFrame", "a", UIConfig, "UIPanelScrollFrameTemplate")
+a:SetBackdrop({
+    bgFile = "Interface/Tooltips/UI-Tooltip-Background",
+    edgeFile = [[Interface\Tooltips\UI-Tooltip-Border]],
+    edgeSize = 14,
+    insets = {left = 3, right = 3, top = 3, bottom = 3},
+})
+a:SetPoint("TOPLEFT", UIConfig, "TOPLEFT", 15, -35)
+a:SetHeight(380)
+a:SetWidth(550)
 
-UIConfig.child = CreateFrame("Frame", nil, UIConfig.ScrollFrame);
-UIConfig.child:SetSize(475, 450);
-UIConfig.ScrollFrame:SetScrollChild(UIConfig.child);
-
-
-
-UIConfig.ScrollFrame.ScrollBar:ClearAllPoints();
-UIConfig.ScrollFrame.ScrollBar:SetPoint("TOPLEFT", UIConfig.ScrollFrame, "TOPRIGHT", -20, -22);
-UIConfig.ScrollFrame.ScrollBar:SetPoint("BOTTOMRIGHT", UIConfig.ScrollFrame, "BOTTOMRIGHT", -15, 22);
-
-
-UIConfig.editFrame = CreateFrame("EditBox", "TchinEditBox", UIConfig, "InputBoxTemplate");
-UIConfig.editFrame:SetSize(UIConfig:GetSize())
-
-UIConfig.editFrame:SetPoint("TOPLEFT", UIConfig.child, 50, -50);
-
-UIConfig.editFrame:SetMovable(false);
-UIConfig.editFrame:SetAutoFocus(false);
-UIConfig.editFrame:SetMultiLine(1000);
-UIConfig.editFrame:SetMaxLetters(32000);
-
-UIConfig.editFrame:Show();
-UIConfig.ScrollFrame:SetScrollChild(UIConfig.editFrame)
-UIConfig:Hide();
+b = CreateFrame("EditBox", "b", a)
+b:SetScript("onescapepressed", function(self) b:ClearFocus() end)
+b:SetFont("Fonts\\FRIZQT__.TTF", 14)
+b:SetMultiLine(true)
+b:SetAutoFocus(true)
+b:SetHeight(545)
+b:SetWidth(545)
+b:Show()
+a:SetScrollChild(b)
+a:Show()
+--UIConfig:Hide();
