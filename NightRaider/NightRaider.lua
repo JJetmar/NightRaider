@@ -1,5 +1,5 @@
 local addon = LibStub("AceAddon-3.0"):NewAddon("NightRaider", "AceConsole-3.0")
-local addonVersion = "1.0"
+local addonVersion = "1.0.1"
 
 local DEBUG = false
 local MOCK = false
@@ -236,18 +236,20 @@ local NightRaider = {
 
         -- Iterate over all Raid members
         for i = 1, GetNumGroupMembers() do
-            local memberName, raidRank, groupId = GetRaidRosterInfo(i)
-            memberName = memberName:lower()
+            local memberNameUnformatted, raidRank, groupId = GetRaidRosterInfo(i)
+            if memberNameUnformatted then
+                local memberName = memberNameUnformatted:lower()
 
-            table.insert(self.raidMembers, memberName)
-            table.insert(self.membersInGroup[groupId], memberName)
-            self.groupSize[groupId] = self.groupSize[groupId] + 1
-            self.groupOfMembers[memberName] = groupId
-            self.memberRaidIndex[memberName] = i
+                table.insert(self.raidMembers, memberName)
+                table.insert(self.membersInGroup[groupId], memberName)
+                self.groupSize[groupId] = self.groupSize[groupId] + 1
+                self.groupOfMembers[memberName] = groupId
+                self.memberRaidIndex[memberName] = i
 
-            -- Get current player raid permissions
-            if self.playerName == memberName then
-                self.hasPermission = raidRank > 0
+                -- Get current player raid permissions
+                if self.playerName == memberName then
+                    self.hasPermission = raidRank > 0
+                end
             end
         end
 
