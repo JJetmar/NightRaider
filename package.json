@@ -1,0 +1,22 @@
+{
+  "name": "nightraider",
+  "version": "1.0.0",
+  "description": "World of Warcraft addon for automation of raid/party tasks,",
+  "main": "sync.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JJetmar/NightRaider.git"
+  },
+  "author": "JJetmar",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/JJetmar/NightRaider/issues"
+  },
+  "homepage": "https://github.com/JJetmar/NightRaider#readme",
+  "devDependencies": {
+    "sync-folders": "^2.0.0"
+  }
+}
