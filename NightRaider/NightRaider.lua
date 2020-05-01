@@ -1,8 +1,10 @@
 local addon = LibStub("AceAddon-3.0"):NewAddon("NightRaider", "AceConsole-3.0")
-local addonVersion = "1.0.1"
+local menuFrame = CreateFrame("Frame", nil, UIParent, "UIDropDownMenuTemplate")
 
-local DEBUG = false
-local MOCK = false
+local addonVersion = "1.1.0"
+
+local DEBUG = true
+local MOCK = true
 
 local DEBUGGER_PREFIX = "Debugger:"
 
@@ -32,7 +34,7 @@ local NightRaider = {
         self.GUI.title:SetFontObject("GameFontHighlight")
         self.GUI.title:SetPoint("CENTER", self.GUI.TitleBg, "CENTER")
         self.GUI.title:SetText("NightRaider v" .. addonVersion)
-        self.GUI:SetSize(600, 460)
+        self.GUI:SetSize(600, 300)
         self.GUI:SetFrameLevel(600)
         self.GUI:SetPoint("CENTER", UIParent, "CENTER")
         self.GUI:SetMovable(true)
@@ -41,8 +43,7 @@ local NightRaider = {
         self.GUI:SetScript("OnDragStart", self.GUI.StartMoving)
         self.GUI:SetScript("OnDragStop", self.GUI.StopMovingOrSizing)
         self.GUI:SetBackdrop({
-            edgeSize = 16,
-            insets = { left = 8, right = 6, top = 8, bottom = 8 },
+            edgeSize = 16
         })
         self.GUI:SetBackdropBorderColor(0, .44, .87, 0.5)
 
@@ -51,12 +52,10 @@ local NightRaider = {
         self.GUI.ScrollFrame:SetBackdrop({
             edgeFile = [[Interface\Tooltips\UI-Tooltip-Border]],
             edgeSize = 14,
-            insets = {left = 3, right = 3, top = 3, bottom = 3},
         })
         self.GUI.ScrollFrame:SetPoint("TOPLEFT", self.GUI, "TOPLEFT", 15, -35)
-        self.GUI.ScrollFrame:SetHeight(375)
-        self.GUI.ScrollFrame:SetWidth(550)
-
+        self.GUI.ScrollFrame:SetHeight(250)
+        self.GUI.ScrollFrame:SetWidth(383)
         self.GUI.ScrollFrame.TextBox:SetPoint("TOPLEFT", self.GUI.ScrollFrame, "TOPLEFT", 150, -20)
         self.GUI.ScrollFrame.TextBox:SetPoint("BOTTOMRIGHT", self.GUI.ScrollFrame, "BOTTOMRIGHT", -15, 15)
         self.GUI.ScrollFrame.TextBox:SetScript("onescapepressed", function()
@@ -64,47 +63,154 @@ local NightRaider = {
         end)
         self.GUI.ScrollFrame.TextBox:SetFont("Fonts\\FRIZQT__.TTF", 14)
         self.GUI.ScrollFrame.TextBox:SetMultiLine(true)
-        self.GUI.ScrollFrame.TextBox:SetTextInsets(10, 10 ,10 ,10)
-        self.GUI.ScrollFrame.TextBox:SetHeight(545)
-        self.GUI.ScrollFrame.TextBox:SetWidth(545)
+        self.GUI.ScrollFrame.TextBox:SetTextInsets(10, 30 ,10 ,10)
+        self.GUI.ScrollFrame.TextBox:SetHeight(250)
+        self.GUI.ScrollFrame.TextBox:SetWidth(383)
         self.GUI.ScrollFrame.TextBox:SetText("")
         self.GUI.ScrollFrame.TextBox:SetAutoFocus(false)
         self.GUI.ScrollFrame:SetScrollChild(self.GUI.ScrollFrame.TextBox)
 
-
         self.GUI.ScrollFrame.TextBox.Focus = CreateFrame("Button", nil, self.GUI, "GameMenuButtonTemplate")
         self.GUI.ScrollFrame.TextBox.Focus:SetPoint("TOPLEFT", self.GUI.ScrollFrame, "TOPLEFT", 0, 0)
-        self.GUI.ScrollFrame.TextBox.Focus:SetHeight(375)
-        self.GUI.ScrollFrame.TextBox.Focus:SetWidth(550)
+        self.GUI.ScrollFrame.TextBox.Focus:SetHeight(250)
+        self.GUI.ScrollFrame.TextBox.Focus:SetWidth(383)
         self.GUI.ScrollFrame.TextBox.Focus:SetAlpha(0)
         self.GUI.ScrollFrame.TextBox.Focus:SetScript("OnClick", function()
             self.GUI.ScrollFrame.TextBox:SetFocus()
         end)
 
-        self.GUI.InviteBtn = CreateFrame("Button", nil, self.GUI, "GameMenuButtonTemplate")
-        self.GUI.InviteBtn:SetPoint("TOPLEFT", self.GUI.ScrollFrame, "BOTTOMLEFT", 0, -5)
-        self.GUI.InviteBtn:SetSize(220, 30)
-        self.GUI.InviteBtn:SetText("Invite/sort members to groups")
-        self.GUI.InviteBtn:SetNormalFontObject("GameFontNormal")
-        self.GUI.InviteBtn:SetHighlightFontObject("GameFontHighlight")
+        self.GUI.InviteToGroupsBtn = CreateFrame("Button", nil, self.GUI, "GameMenuButtonTemplate")
+        self.GUI.InviteToGroupsBtn:SetPoint("TOPLEFT", self.GUI.ScrollFrame, "TOPRIGHT", 30, 0)
+        self.GUI.InviteToGroupsBtn:SetSize(155, 30)
+        self.GUI.InviteToGroupsBtn:SetText("Invite members")
+        self.GUI.InviteToGroupsBtn:SetNormalFontObject("GameFontNormal")
+        self.GUI.InviteToGroupsBtn:SetHighlightFontObject("GameFontHighlight")
+
+        self.GUI.SortMembersButton = CreateFrame("Button", nil, self.GUI, "GameMenuButtonTemplate")
+        self.GUI.SortMembersButton:SetPoint("TOPLEFT", self.GUI.InviteToGroupsBtn, "BOTTOMLEFT", 0, -5)
+        self.GUI.SortMembersButton:SetSize(155, 30)
+        self.GUI.SortMembersButton:SetText("Sort to groups")
+        self.GUI.SortMembersButton:SetNormalFontObject("GameFontNormal")
+        self.GUI.SortMembersButton:SetHighlightFontObject("GameFontHighlight")
+        self.GUI.SortMembersButton:SetScript("OnClick", function()
+            self:SortLoadedMembers()
+        end)
 
         self.GUI.IncludeNotGroupedCheck = CreateFrame("CheckButton", "includeNotGrouped", self.GUI, "ChatConfigCheckButtonTemplate")
-        self.GUI.IncludeNotGroupedCheck:SetPoint("LEFT", self.GUI.InviteBtn, "LEFT", 414, -2)
+        self.GUI.IncludeNotGroupedCheck:SetPoint("TOPLEFT", self.GUI.SortMembersButton, "BOTTOMLEFT", 0, -5)
         self.GUI.IncludeNotGroupedCheck.tooltip = "Include people without specified group"
         includeNotGroupedText:SetText(" Include not grouped")
-        self.GUI.InviteBtn:SetScript("OnClick", function()
+        self.GUI.InviteToGroupsBtn:SetScript("OnClick", function()
             self:InviteAndSortLoadedMembers()
         end)
 
         self.GUI.AutoSortCheck = CreateFrame("CheckButton", "autoSort", self.GUI, "ChatConfigCheckButtonTemplate")
-        self.GUI.AutoSortCheck:SetPoint("LEFT", self.GUI.IncludeNotGroupedCheck, "LEFT", -155, 0)
+        self.GUI.AutoSortCheck:SetPoint("TOPLEFT", self.GUI.IncludeNotGroupedCheck, "BOTTOMLEFT", 0, -5)
         self.GUI.AutoSortCheck.tooltip = "Automatic sorting to groups when new members join to party/raid."
         self.GUI.AutoSortCheck:SetChecked(true)
         autoSortText:SetText(" Sort new members")
 
+        -- Set Targets
+        self.GUI.SetTargetsButton = CreateFrame("Button", nil, self.GUI, "GameMenuButtonTemplate")
+        self.GUI.SetTargetsButton:SetPoint("BOTTOMLEFT", self.GUI.ScrollFrame, "BOTTOMRIGHT", 30, -2)
+        self.GUI.SetTargetsButton:SetSize(155, 30)
+        self.GUI.SetTargetsButton:SetText("Set targets")
+        self.GUI.SetTargetsButton:SetNormalFontObject("GameFontNormal")
+        self.GUI.SetTargetsButton:SetHighlightFontObject("GameFontHighlight")
+        self.GUI.SetTargetsButton:SetScript("OnClick", function()
+            self:ShowSetTargetsMenu();
+        end)
+
         -- Do not show Window after login.
         self.GUI:Hide()
         self:UpdateRaidInfo()
+    end,
+
+    ShowSetTargetsMenu = function(_, button)
+        local sources = {
+            { name = "Classes" },
+            { name = "Groups" },
+            { name = "Roles" },
+        }
+
+        local targets = {
+            classes = {
+                options = {
+                    Warriors = WARRIOR,
+                    Paladins = PALADIN,
+                    Hunters = HUNTER,
+                    Rogues = ROGUE,
+                    Priests = PRIEST,
+                    Shamans = SHAMAN,
+                    Mages = MAGE,
+                    Warlocks = WARLOCK,
+                    Druids = DRUID
+                },
+                onSelect = function() end
+            },
+            symbols = {
+                onSelect = function()
+                    local symbols = {
+                        Skull = "{rt8}",
+                        Cross = "{rt7}",
+                        Square = "{rt6}",
+                        Moon = "{rt5}",
+                        Triangle = "{rt4}",
+                        Diamond = "{rt3}",
+                        Circle = "{rt2}",
+                        Star = "{rt1}"
+                    }
+                end
+            }
+        }
+
+        local menu = {
+            { text = "Source", isTitle = true, notCheckable = 1},
+            { text = "Classes", func = function() NightRaider:InviteAndSortLoadedMembers() end, notCheckable = 1, hasArrow = true,
+                menuList = {
+                    { text = "Mages", func = function() print("You've chosen option 3"); end, colorCode	= "|c" .. ({ GetClassColor("MAGE") })[4], hasArrow = true, notCheckable = 1,
+                        menuList = {
+                            { text = "Target", isTitle = true, notCheckable = 1},
+                            { text = "Groups", func = function() print("You've chosen option 3"); end, notCheckable = 1 },
+                            { text = "Symbols", func = function() print("You've chosen option 3"); end, notCheckable = 1 }
+                        }
+                    }
+                }
+            },
+            { text = "Groups", func = function() NightRaider:InviteAndSortLoadedMembers() end, notCheckable = 1, hasArrow = true,
+                menuList = {
+                    { text = "Mages", func = function() print("You've chosen option 3"); end, colorCode	= "|cff0000ff", hasArrow = true}
+                }
+            },
+            { text = "Roles", func = function() NightRaider:InviteAndSortLoadedMembers() end, notCheckable = 1, hasArrow = true,
+                menuList = {
+                    { text = "Mages", func = function() print("You've chosen option 3"); end, colorCode	= "|cff0000ff", hasArrow = true}
+                }
+            }
+        }
+
+        EasyMenu(menu, menuFrame, "cursor", 0 , 0, "MENU")
+    end,
+
+    InviteLoadedMembers = function(self)
+        self.insertedMembersInfo = self:LoadInsertedValidMembersInfo()
+        self:UpdateRaidInfo()
+
+        local invite = {};
+
+    end,
+
+    SortLoadedMembers = function(self)
+        self.insertedMembersInfo = self:LoadInsertedValidMembersInfo()
+        self:UpdateRaidInfo()
+
+        -- Sort members to groups
+        for member, group in pairs(self.insertedMembersInfo) do
+            -- If member is not part of this raid yet
+            if self.memberRaidIndex[member] then
+                self:SwitchMemberToTargetGroup(member, group)
+            end
+        end
     end,
 
     InviteAndSortLoadedMembers = function(self)
@@ -113,17 +219,17 @@ local NightRaider = {
 
         local invite = {};
 
+        -- Sort members to groups
         for member, group in pairs(self.insertedMembersInfo) do
             -- If member is not part of this raid yet
             if not self.memberRaidIndex[member] then
                 if group ~= 0 or self.GUI.IncludeNotGroupedCheck:GetChecked() then
                     table.insert(invite, member)
                 end
-            else
-                self:SwitchMemberToTargetGroup(member, group)
             end
         end
 
+        -- Invite members
         for _, member in ipairs(invite) do
             if DEBUG or MOCK then
                 print(DEBUGGER_PREFIX, "Inviting " .. member)
@@ -332,7 +438,6 @@ local NightRaider = {
     end
 }
 
-local menuFrame = CreateFrame("Frame", nil, UIParent, "UIDropDownMenuTemplate")
 local nightRaiderLDB = LibStub("LibDataBroker-1.1"):NewDataObject("NightRaider", {
     type = "data source",
     text = "NightRaider",
